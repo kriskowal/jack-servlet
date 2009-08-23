@@ -1,5 +1,5 @@
 {
-    "name": "jack-servelet",
+    "name": "jack-servlet",
     "author": "Tom Robinson",
     "dependencies": ["narwhal", "jack"]
 }

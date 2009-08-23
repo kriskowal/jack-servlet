@@ -13,15 +13,16 @@ public class JackServlet extends HttpServlet {
 	private Function app;
 	private Function handler;
 	
-    public void init(ServletConfig config) throws ServletException {
-    	super.init(config);
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
 
 		final String modulesPath = getServletContext().getRealPath(getInitParam(config, "modulesPath", "WEB-INF"));
 		final String moduleName = getInitParam(config, "module", "jackconfig.js");
 		final String appName = getInitParam(config, "app", "app");
 		final String environmentName = getInitParam(config, "environment", null);
-    	
-		final String narwhalHome = getServletContext().getRealPath("WEB-INF/narwhal");
+			
+		final String packagePrefix = getServletContext().getRealPath("WEB-INF");
+		final String narwhalHome = getServletContext().getRealPath("WEB-INF/packages/narwhal");
 		final String narwhalFilename = "platforms/rhino/bootstrap.js";
 		
 		Context context = Context.enter();
@@ -29,8 +30,9 @@ public class JackServlet extends HttpServlet {
 			//context.setOptimizationLevel(-1);
 			scope = new ImporterTopLevel(context);
 			
-			ScriptableObject.putProperty(scope, "NARWHAL_HOME",  Context.javaToJS(narwhalHome, scope));
-			//ScriptableObject.putProperty(scope, "$DEBUG",  Context.javaToJS(true, scope));
+			ScriptableObject.putProperty(scope, "SEA", Context.javaToJS(packagePrefix, scope));
+			ScriptableObject.putProperty(scope, "NARWHAL_HOME",	 Context.javaToJS(narwhalHome, scope));
+			//ScriptableObject.putProperty(scope, "$DEBUG",	 Context.javaToJS(true, scope));
 			
 			// load Narwhal
 			context.evaluateReader(scope, new FileReader(narwhalHome+"/"+narwhalFilename), narwhalFilename, 1, null);
@@ -58,11 +60,11 @@ public class JackServlet extends HttpServlet {
 		} finally {
 			Context.exit();
 		}
-    }
-    
+	}
+		
 	public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		Context context = Context.enter();
-		try	{
+		try {
 			Object args[] = {app, request, response};
 			handler.call(context, scope, null, args);
 		} finally {
@@ -75,3 +77,4 @@ public class JackServlet extends HttpServlet {
         return value == null ? defaultValue : value;
     }
 }
+
